@@ -75,6 +75,20 @@ public sealed class AtyaHealthChecksEndpointOptionsTests
         readyAct.Should().Throw<ArgumentNullException>();
     }
 
+    [Fact]
+    public void Predicate_Setters_Should_Store_Custom_Predicates()
+    {
+        var options = new AtyaHealthChecksEndpointOptions
+        {
+            LivePredicate = _ => true,
+            ReadyPredicate = _ => false,
+        };
+        HealthCheckRegistration registration = CreateRegistration();
+
+        options.LivePredicate(registration).Should().BeTrue();
+        options.ReadyPredicate(registration).Should().BeFalse();
+    }
+
     private static HealthCheckRegistration CreateRegistration(params string[] tags)
     {
         return new HealthCheckRegistration(

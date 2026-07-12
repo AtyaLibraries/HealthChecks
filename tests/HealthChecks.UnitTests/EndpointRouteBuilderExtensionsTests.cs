@@ -71,6 +71,46 @@ public sealed class EndpointRouteBuilderExtensionsTests
             .OnlyContain(endpoint => endpoint.Metadata.GetMetadata<TestMetadata>() == metadata);
     }
 
+    [Fact]
+    public void MapAtyaWebHealthChecks_Should_Apply_Final_Conventions_To_All_Endpoints()
+    {
+        using var app = CreateApp();
+        var metadata = new TestMetadata();
+
+        app.MapAtyaWebHealthChecks()
+            .Finally(endpointBuilder => endpointBuilder.Metadata.Add(metadata));
+
+        GetRouteEndpoints(app)
+            .Where(endpoint => endpoint.RoutePattern.RawText?.StartsWith("/health", StringComparison.Ordinal) == true)
+            .Should()
+            .OnlyContain(endpoint => endpoint.Metadata.GetMetadata<TestMetadata>() == metadata);
+    }
+
+    [Fact]
+    public void ConventionBuilder_Should_Throw_When_Convention_Is_Null()
+    {
+        using var app = CreateApp();
+        AtyaHealthChecksEndpointConventionBuilder builder = app.MapAtyaWebHealthChecks();
+
+        Action addAct = () => builder.Add(null!);
+        Action finallyAct = () => builder.Finally(null!);
+
+        addAct.Should().Throw<ArgumentNullException>();
+        finallyAct.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void MapAtyaWebHealthChecks_Should_Support_Non_Json_Response_Option()
+    {
+        using var app = CreateApp();
+
+        AtyaHealthChecksEndpointConventionBuilder builder = app.MapAtyaWebHealthChecks(options =>
+            options.UseJsonResponse = false);
+
+        builder.Should().NotBeNull();
+        GetRoutePatterns(app).Should().Contain(["/health", "/health/live", "/health/ready"]);
+    }
+
     private static WebApplication CreateApp()
     {
         WebApplicationBuilder builder = WebApplication.CreateSlimBuilder();
