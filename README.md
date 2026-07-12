@@ -1,116 +1,91 @@
-<!-- After adding real code, run the Atya per-repo README Standardization prompt to fill real examples. -->
-<h1 align="center">Atya.Web.HealthChecks</h1>
+# Atya.Web.HealthChecks
 
-<p align="center"><i>Opinionated ASP.NET Core health check registration and response helpers for Atya services.</i></p>
+Opinionated ASP.NET Core health-check registration and endpoint helpers for Atya services.
 
-<p align="center">
-  <a href="https://www.nuget.org/packages/Atya.Web.HealthChecks"><img src="https://img.shields.io/nuget/v/Atya.Web.HealthChecks?style=for-the-badge&logo=nuget&logoColor=white&label=NuGet&color=512BD4" alt="NuGet Version"></a>
-  <a href="https://www.nuget.org/packages/Atya.Web.HealthChecks"><img src="https://img.shields.io/nuget/dt/Atya.Web.HealthChecks?style=for-the-badge&logo=nuget&logoColor=white&label=Downloads&color=512BD4" alt="NuGet Downloads"></a>
-  <img src="https://img.shields.io/badge/.NET_10.0-512BD4?style=for-the-badge&logo=dotnet&logoColor=white" alt="Target Framework">
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/AtyaLibraries/Atya.Web.HealthChecks?style=for-the-badge&color=512BD4" alt="License"></a>
-  <a href="https://github.com/AtyaLibraries/Atya.Web.HealthChecks/actions"><img src="https://img.shields.io/github/actions/workflow/status/AtyaLibraries/Atya.Web.HealthChecks/ci.yml?branch=development&style=for-the-badge&logo=githubactions&logoColor=white&label=Build" alt="Build"></a>
-  <a href="https://github.com/AtyaLibraries/Atya.Web.HealthChecks"><img src="https://img.shields.io/github/stars/AtyaLibraries/Atya.Web.HealthChecks?style=for-the-badge&logo=github&logoColor=white&color=512BD4" alt="Stars"></a>
-</p>
+[![NuGet Version](https://img.shields.io/nuget/v/Atya.Web.HealthChecks?style=for-the-badge&logo=nuget&logoColor=white&label=NuGet&color=512BD4)](https://www.nuget.org/packages/Atya.Web.HealthChecks)
+[![Downloads](https://img.shields.io/nuget/dt/Atya.Web.HealthChecks?style=for-the-badge&logo=nuget&logoColor=white&label=Downloads&color=512BD4)](https://www.nuget.org/packages/Atya.Web.HealthChecks)
+![.NET 10.0](https://img.shields.io/badge/.NET_10.0-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
+[![Build](https://img.shields.io/github/actions/workflow/status/AtyaLibraries/HealthChecks/ci.yml?branch=development&style=for-the-badge&logo=githubactions&logoColor=white&label=Build)](https://github.com/AtyaLibraries/HealthChecks/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-512BD4?style=for-the-badge)](LICENSE)
 
----
+## Overview
 
-## 📖 Overview
+`Atya.Web.HealthChecks` is a thin opinion layer over `Microsoft.Extensions.Diagnostics.HealthChecks` and ASP.NET Core endpoint routing. It registers the built-in health-check services, maps the standard Atya endpoint set, and provides a stable JSON response writer for operational probes.
 
-Opinionated ASP.NET Core health check registration and response helpers for Atya services. <!-- TODO: expand to 2-4 sentences once the package has real scope. -->
+The package does not replace ASP.NET Core health checks. Application-specific probes still use the Microsoft `IHealthChecksBuilder` APIs.
 
-## ✨ Features
+## Installation
 
-- **Focused API** — Replace with the package's primary capability. <!-- TODO -->
-- **Modern .NET integration** — Replace with the package's runtime or framework fit. <!-- TODO -->
-- **Production-ready packaging** — Replace with the package's reliability or operations story. <!-- TODO -->
-
-## 📦 Installation
-
-**.NET CLI**
 ```bash
 dotnet add package Atya.Web.HealthChecks
 ```
 
-**Package Manager**
-```powershell
-Install-Package Atya.Web.HealthChecks
-```
+## Quick Start
 
-**PackageReference**
-```xml
-<PackageReference Include="Atya.Web.HealthChecks" Version="<latest-stable>" />
-```
-
-## 🚀 Quick Start
-
-<!-- TODO: replace this scaffold example with your package's real API. -->
 ```csharp
 using Atya.Web.HealthChecks;
+using Atya.Web.HealthChecks.Extensions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-var assembly = typeof(HealthChecksMarker).Assembly;
-Console.WriteLine($"{assembly.GetName().Name} is ready.");
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddAtyaWebHealthChecks(healthChecks =>
+{
+    healthChecks.AddCheck(
+        "self",
+        () => HealthCheckResult.Healthy(),
+        tags: [AtyaHealthCheckTags.Live]);
+    healthChecks.AddCheck(
+        "database",
+        () => HealthCheckResult.Healthy(),
+        tags: [AtyaHealthCheckTags.Ready]);
+});
+
+WebApplication app = builder.Build();
+
+app.MapAtyaWebHealthChecks();
+
+await app.RunAsync();
 ```
 
-## 📚 Usage
+## Endpoint Contract
 
-Add real usage examples once the package API is implemented. <!-- TODO -->
+`MapAtyaWebHealthChecks()` maps three endpoints by default:
 
-## 🗂️ Project Structure
+| Endpoint | Predicate | Purpose |
+| --- | --- | --- |
+| `/health` | all registered checks | Complete health report. |
+| `/health/live` | checks tagged `AtyaHealthCheckTags.Live` (`"live"`) | Liveness probe. |
+| `/health/ready` | checks tagged `AtyaHealthCheckTags.Ready` (`"ready"`) | Readiness probe. |
 
-| Icon | Meaning |
-|------|---------|
-| 📦 | Solution / repo root (`.sln`) |
-| 📂 `src` | Library source code (the published package) |
-| 🧪 `tests` | Unit & integration tests |
-| 🎯 `samples` | Runnable usage samples |
-| ⚡ `benchmarks` | Performance benchmarks |
-| ⚙️ `.github` | CI/CD & repo config |
-| 📄 | Notable single file |
+Responses use Atya's JSON writer by default and include the overall status, total duration, and per-check entries with status, duration, description, tags, exception message, and data.
 
-```text
-📦 Atya.Web.HealthChecks
-├── 📂 src
-│   └── 📄 HealthChecks.csproj      # the published package
-├── 🧪 tests
-│   └── 📄 HealthChecks.UnitTests.csproj
-├── 🎯 samples
-│   └── 📄 HealthChecks.Samples.Console.csproj
-├── ⚡ benchmarks
-│   └── 📄 HealthChecks.Benchmarks.csproj
-├── ⚙️ .github/workflows
-├── 📄 HealthChecks.sln
-├── 📄 README.md
-└── 📄 LICENSE
+## Customization
+
+```csharp
+app.MapAtyaWebHealthChecks(options =>
+{
+    options.HealthPath = "/status";
+    options.LivePath = "/status/live";
+    options.ReadyPath = "/status/ready";
+    options.AllowCachingResponses = false;
+    options.UseJsonResponse = true;
+});
 ```
 
-## 🎯 Compatibility
+`LivePredicate` and `ReadyPredicate` can be replaced when an application uses different tag conventions.
+
+## Compatibility
 
 Targets `net10.0`.
 
-## 🧪 Testing
+## Testing
 
 ```bash
 dotnet test
 ```
 
-## ⚡ Benchmarks
+## License
 
-Performance benchmarks live in `benchmarks/`. Run with `dotnet run -c Release` from the benchmark project.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please open an issue or pull request on [GitHub](https://github.com/AtyaLibraries/Atya.Web.HealthChecks).
-
-## 📄 License
-
-Released under the **MIT** license. See [LICENSE](LICENSE) for details.
-
----
-
-## 🏛️ About Atya Libraries
-
-`Atya.Web.HealthChecks` is part of **[Atya Libraries](https://github.com/AtyaLibraries)** — a family of focused, modern .NET libraries published under the reserved **`Atya.*`** prefix on NuGet. Every package shares the same principles: a small, clear public API, full test coverage, and consistent documentation.
-
-> 🔎 Browse the full collection on [GitHub](https://github.com/AtyaLibraries) and [NuGet](https://www.nuget.org/profiles/ArsenAsulyan).
-
-<p align="center"><sub>Made with 💜 .NET · © 2026 Atya Libraries</sub></p>
+Released under the MIT license. See [LICENSE](LICENSE) for details.
