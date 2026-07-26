@@ -19,6 +19,18 @@ public sealed class AtyaHealthChecksEndpointOptionsTests
         options.ReadyPath.Should().Be("/health/ready");
         options.UseJsonResponse.Should().BeTrue();
         options.AllowCachingResponses.Should().BeFalse();
+        options.IncludeDetailedDiagnostics.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IncludeDetailedDiagnostics_Should_Be_Opt_In()
+    {
+        var options = new AtyaHealthChecksEndpointOptions
+        {
+            IncludeDetailedDiagnostics = true,
+        };
+
+        options.IncludeDetailedDiagnostics.Should().BeTrue();
     }
 
     [Theory]

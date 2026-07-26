@@ -52,12 +52,22 @@ public class HealthCheckResponseWriterBenchmarks
     }
 
     /// <summary>
-    /// Writes the Atya JSON health-check response payload.
+    /// Writes the default minimal Atya JSON health-check response payload.
     /// </summary>
     /// <returns>A task that completes when the payload is written.</returns>
-    [Benchmark]
+    [Benchmark(Baseline = true)]
     public Task WriteJsonResponseAsync()
     {
         return AtyaHealthCheckResponseWriter.WriteJsonAsync(_context, _report);
+    }
+
+    /// <summary>
+    /// Writes the opt-in detailed Atya JSON health-check response payload.
+    /// </summary>
+    /// <returns>A task that completes when the payload is written.</returns>
+    [Benchmark]
+    public Task WriteDetailedJsonResponseAsync()
+    {
+        return AtyaHealthCheckResponseWriter.WriteDetailedJsonAsync(_context, _report);
     }
 }
