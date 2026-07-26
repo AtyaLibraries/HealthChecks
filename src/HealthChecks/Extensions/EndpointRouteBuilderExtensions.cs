@@ -60,7 +60,9 @@ public static class EndpointRouteBuilderExtensions
 
         if (options.UseJsonResponse)
         {
-            healthCheckOptions.ResponseWriter = AtyaHealthCheckResponseWriter.WriteJsonAsync;
+            healthCheckOptions.ResponseWriter = options.IncludeDetailedDiagnostics
+                ? AtyaHealthCheckResponseWriter.WriteDetailedJsonAsync
+                : AtyaHealthCheckResponseWriter.WriteJsonAsync;
         }
 
         return healthCheckOptions;
