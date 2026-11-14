@@ -6,10 +6,6 @@
     <ItemGroup Label="Runtime">
         <PackageVersion Include="Atya.Foundation.Guards" Version="1.0.2" />
     </ItemGroup>
-    <ItemGroup Label="Security pins">
-        <!-- Temporary pin for GHSA-23fw-v26w-5fgq; remove when Atya.Build.Sdk ships a patched SourceLink (ATYA-031 / ATYA-152). -->
-        <PackageVersion Include="Microsoft.Build.Tasks.Git" Version="10.0.303" />
-    </ItemGroup>
     <ItemGroup Label="Benchmarking">
         <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
     </ItemGroup>
