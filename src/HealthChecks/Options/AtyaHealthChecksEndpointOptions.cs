@@ -59,6 +59,20 @@ public sealed class AtyaHealthChecksEndpointOptions
     public bool AllowCachingResponses { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether endpoint responses include per-check diagnostics.
+    /// Defaults to <see langword="false"/>, which returns the aggregate health status only.
+    /// </summary>
+    /// <remarks>
+    /// Enabling this opts in to the detailed payload written by
+    /// <see cref="AtyaHealthCheckResponseWriter.WriteDetailedJsonAsync"/>, which discloses check names,
+    /// durations, descriptions, tags, exception messages, and check data. Health endpoints are commonly
+    /// unauthenticated, so enable this only when the endpoints are protected by authorization or are
+    /// unreachable from untrusted networks. Has no effect when <see cref="UseJsonResponse"/> is
+    /// <see langword="false"/>.
+    /// </remarks>
+    public bool IncludeDetailedDiagnostics { get; set; }
+
+    /// <summary>
     /// Gets or sets the predicate used by the liveness endpoint.
     /// </summary>
     /// <exception cref="ArgumentNullException">The assigned value is <see langword="null"/>.</exception>

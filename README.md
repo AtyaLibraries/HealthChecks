@@ -59,7 +59,54 @@ await app.RunAsync();
 | `/health/live` | checks tagged `AtyaHealthCheckTags.Live` (`"live"`) | Liveness probe. |
 | `/health/ready` | checks tagged `AtyaHealthCheckTags.Ready` (`"ready"`) | Readiness probe. |
 
-Responses use Atya's JSON writer by default and include the overall status, total duration, and per-check entries with status, duration, description, tags, exception message, and data.
+## Response Shape
+
+Responses use Atya's JSON writer by default and contain the aggregate status only:
+
+```json
+{"status":"Healthy"}
+```
+
+Health endpoints are typically unauthenticated, so the default response deliberately omits check names,
+durations, descriptions, tags, exception messages, and check data — none of which a probe needs, and all of
+which describe internal service topology. The HTTP status code (`200` healthy, `503` unhealthy) still
+carries the signal orchestrators and load balancers act on.
+
+Per-check diagnostics are opt-in via `IncludeDetailedDiagnostics`:
+
+```csharp
+app.MapAtyaWebHealthChecks(options => options.IncludeDetailedDiagnostics = true);
+```
+
+```json
+{
+  "status": "Healthy",
+  "totalDuration": "00:00:00.0110000",
+  "entries": {
+    "database": {
+      "status": "Healthy",
+      "duration": "00:00:00.0070000",
+      "description": "Database dependency is reachable.",
+      "tags": ["ready"],
+      "exception": null,
+      "data": { "region": "eu" }
+    }
+  }
+}
+```
+
+The detailed payload surfaces whatever the application's health checks place in their descriptions,
+exceptions, and data dictionaries. Enable it only on endpoints protected by authorization, or bound to a
+management interface untrusted callers cannot reach — for example:
+
+```csharp
+app.MapAtyaWebHealthChecks(options => options.IncludeDetailedDiagnostics = true)
+   .RequireAuthorization("HealthDiagnostics");
+```
+
+Both writers are usable directly as `HealthCheckOptions.ResponseWriter` values:
+`AtyaHealthCheckResponseWriter.WriteJsonAsync` (minimal) and
+`AtyaHealthCheckResponseWriter.WriteDetailedJsonAsync` (detailed).
 
 ## Customization
 
@@ -71,6 +118,7 @@ app.MapAtyaWebHealthChecks(options =>
     options.ReadyPath = "/status/ready";
     options.AllowCachingResponses = false;
     options.UseJsonResponse = true;
+    options.IncludeDetailedDiagnostics = false;
 });
 ```
 
